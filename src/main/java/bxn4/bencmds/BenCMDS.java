@@ -29,11 +29,16 @@ public class BenCMDS extends ListenerAdapter {
         String activity = "";
         String streamUrl = "";
         Yaml yaml = new Yaml();
-        InputStream inputStream = null;
-        inputStream = getClass().getClassLoader().getResourceAsStream("src/config.yaml");
-        Map<String, Object> data = yaml.load(inputStream);
+        FileReader reader = null;
+        InputStream inputStream = BenCMDS.class.getResourceAsStream("/config.yaml");
+        try {
+            reader = new FileReader("config.yaml");
+        } catch (FileNotFoundException e) {
+        }
+        Map<String, Object> data = yaml.load(reader);
         try {
             inputStream.close();
+            reader.close();
         } catch (IOException e) {
         }
         token = data.get("token").toString();
