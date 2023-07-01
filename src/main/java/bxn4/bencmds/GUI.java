@@ -13,8 +13,12 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.sql.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -171,7 +175,6 @@ public class GUI {
         String[] statuses = { "online", "idle", "dnd", "invisible" };
         String[] types = { "listening", "streaming", "playing", "competing", "watching" };
         String[] databaseTypes = { "SQLite", "MySQL", "MariaDB", "PostgreSQL" };
-        String[] ports = { "", "3306", "5432", "1433", "" };
         JFrame frame = new JFrame("Set-up");
         JPanel panel = new JPanel();
         JLabel statusLbl = new JLabel("Status:");
@@ -179,7 +182,7 @@ public class GUI {
         JLabel streamUrlLbl = new JLabel("Stream Url:");
         JLabel activityLbl = new JLabel("Activity:");
         JLabel prefixLbl = new JLabel("Prefix (for custom commands):");
-        JLabel databaseTypeLbl = new JLabel("Database type:");
+        JLabel databaseTypeLbl = new JLabel("Database:");
         JLabel serverUrlLbl = new JLabel("Server:");
         JLabel portLbl = new JLabel("Port:");
         JLabel databaseLbl = new JLabel("Database name:");
@@ -196,6 +199,7 @@ public class GUI {
         JButton cancelBtm = new JButton("Cancel");
         JButton browseBtn = new JButton("...");
         JButton testConnectionBtn = new JButton("Test connection");
+        JButton createDatabase = new JButton("Create");
 
         JTextField streamUrlTxtFld = new JTextField("Enter Stream Url here...");
         JTextField activityTxtFld = new JTextField("Enter custom activity here...");
@@ -212,6 +216,7 @@ public class GUI {
         passwordTxtFld.setEnabled(false);
         testConnectionBtn.setEnabled(false);
         databaseTxtFld.setEnabled(false);
+        database = "sqlite";
 
         statusLbl.setBounds(10,10,100,20);
         typeLbl.setBounds(10,50,100,20);
@@ -227,12 +232,13 @@ public class GUI {
 
         statusCmbBx.setBounds(60,10,100,20);
         typeCmbBx.setBounds(60,50,100,20);
-        databaseTypeCmbx.setBounds(350,90,100,20);
+        databaseTypeCmbx.setBounds(320,90,100,20);
 
         finishBtn.setBounds(530,280,100,20);
         cancelBtm.setBounds(10,280,100,20);
         browseBtn.setBounds(450,140,20,20);
         testConnectionBtn.setBounds(480,140,150,20);
+        createDatabase.setBounds(550,170,80,20);
 
         streamUrlTxtFld.setBounds(250,50,200,20);
         activityTxtFld.setBounds(10,110,200,20);
@@ -263,6 +269,7 @@ public class GUI {
         frame.add(cancelBtm);
         frame.add(browseBtn);
         frame.add(testConnectionBtn);
+        frame.add(createDatabase);
 
         frame.add(streamUrlTxtFld);
         frame.add(activityTxtFld);
@@ -293,6 +300,11 @@ public class GUI {
                 System.out.println("sqliteSelected: " + sqliteSelected);
                 System.out.println("conectionIsSuccessFul: " + conectionIsSuccessFul);
                 System.out.println("streamType: " + streamType); */
+                try {
+                    Class.forName("org.sqlite.JDBC");
+                } catch (ClassNotFoundException ex) {
+                    JOptionPane.showMessageDialog(null, ex, "Test connection",JOptionPane.INFORMATION_MESSAGE);
+                }
                 databaseFileUrl = serverUrlTxtFld.getText();
                 Connection conn = connect();
                 if (conn != null) {
@@ -306,7 +318,7 @@ public class GUI {
                         stmt.close();
                         conn.close();
                     } catch (SQLException ex) {
-                        JOptionPane.showMessageDialog(null, "Error occurred during connection test: " + ex.getMessage(), "Test connection",JOptionPane.WARNING_MESSAGE);
+                        JOptionPane.showMessageDialog(null, ex.getMessage(), "Test connection",JOptionPane.WARNING_MESSAGE);
                         conectionIsSuccessFul = false;
                         checkBooleans();
                     }
@@ -322,7 +334,7 @@ public class GUI {
                             conn = DriverManager.getConnection(databaseUrl);
                         }
                         else {
-                            JOptionPane.showMessageDialog(null, "Error occurred during connection test: File not found!", "Test connection",JOptionPane.WARNING_MESSAGE);
+                            JOptionPane.showMessageDialog(null, "File not found!", "Test connection",JOptionPane.WARNING_MESSAGE);
                             conectionIsSuccessFul = false;
                             checkBooleans();
                         }
@@ -337,11 +349,69 @@ public class GUI {
                         conn = DriverManager.getConnection(databaseUrl, username, password);
                     }
                 } catch (SQLException e) {
-                    JOptionPane.showMessageDialog(null, "Error occurred during connection test: " + e.getMessage(), "Test connection",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(null, e.getMessage(), "Test connection",JOptionPane.WARNING_MESSAGE);
                     conectionIsSuccessFul = false;
                     checkBooleans();
                 }
                 return conn;
+            }
+        });
+        createDatabase.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File tempDatabase = null;
+                String sqlCommand =
+                        "CREATE TABLE IF NOT EXISTS `userData` (\n" +
+                                "`userId` INTEGER,\n" +
+                                "`userMoney` LONGINTEGER,\n" +
+                                "`userBankClosed` BOOLEAN\n" +
+                                ");";
+                try {
+                    tempDatabase = File.createTempFile("database", ".db");
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(null, ex, "Create Database", JOptionPane.WARNING_MESSAGE);
+                }
+                String tempDatabaseUrl = tempDatabase.getAbsolutePath();
+                try {
+                    Connection conn = DriverManager.getConnection("jdbc:sqlite:" + tempDatabaseUrl);
+                    if (conn != null) {
+                        Statement stmt = conn.createStatement();
+                        stmt.execute(sqlCommand);
+                        stmt.close();
+                        conn.close();
+                    }
+                } catch (SQLException ex) {
+                }
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setSelectedFile(new File("database.db"));
+                fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+                int result = fileChooser.showSaveDialog(frame);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                    Path path = file.toPath();
+                    try {
+                        if(!file.exists()) {
+                            Files.copy(Path.of(tempDatabaseUrl), path);
+                            JOptionPane.showMessageDialog(null, "Database created.", "Create Database", JOptionPane.INFORMATION_MESSAGE);
+                            serverUrlTxtFld.setText(path.toString());
+                        }
+                        else {
+                            int dialogResult = JOptionPane.showConfirmDialog(null, "The file exists. Do you want to overwrite it?", "Create Database", JOptionPane.YES_NO_OPTION);
+                            if(dialogResult == JOptionPane.YES_OPTION) {
+                                Files.copy(Path.of(tempDatabaseUrl), path, StandardCopyOption.REPLACE_EXISTING);
+                                JOptionPane.showMessageDialog(null, "Database created.", "Create Database", JOptionPane.INFORMATION_MESSAGE);
+                                serverUrlTxtFld.setText(path.toString());
+                            }
+                            else {
+                                tempDatabase.delete();
+                            }
+                        }
+                    } catch (IOException ex) {
+                        JOptionPane.showMessageDialog(null, ex, "Create Database", JOptionPane.WARNING_MESSAGE);
+                    }
+                } else {
+                    tempDatabase.delete();
+                }
             }
         });
         serverUrlTxtFld.getDocument().addDocumentListener(new DocumentListener() {
@@ -401,7 +471,7 @@ public class GUI {
                         databaseTxtFld.setEnabled(true);
                         usernameTxtFld.setEnabled(true);
                         passwordTxtFld.setEnabled(true);
-                        portTxtFld.setText(ports[1]);
+                        portTxtFld.setText("3306");
                         database = "mysql";
                         sqliteSelected = false;
                         conectionIsSuccessFul = false;
@@ -413,7 +483,7 @@ public class GUI {
                         databaseTxtFld.setEnabled(true);
                         usernameTxtFld.setEnabled(true);
                         passwordTxtFld.setEnabled(true);
-                        portTxtFld.setText(ports[2]);
+                        portTxtFld.setText("3306");
                         database = "mariadb";
                         sqliteSelected = false;
                         conectionIsSuccessFul = false;
@@ -425,7 +495,7 @@ public class GUI {
                         databaseTxtFld.setEnabled(true);
                         usernameTxtFld.setEnabled(true);
                         passwordTxtFld.setEnabled(true);
-                        portTxtFld.setText(ports[3]);
+                        portTxtFld.setText("5432");
                         database = "postgresql";
                         sqliteSelected = false;
                         conectionIsSuccessFul = false;
@@ -652,16 +722,16 @@ public class GUI {
                 map.put("password", passwordTxtFld.getText());
                 dumper.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
                 Yaml yaml = new Yaml(dumper);
-                File configFile = new File(getClass().getClassLoader().getResource("src/config.yaml").getFile());
-                FileWriter writer = null;
                 try {
-                    writer = new FileWriter(configFile);
-                } catch (IOException ex) {
-                }
+                    InputStream inputStream = BenCMDS.class.getResourceAsStream("/config.yaml");
+                    FileWriter writer = new FileWriter("config.yaml");
                 yaml.dump(map, writer);
                 try {
                     writer.close();
                 } catch (IOException ex) {
+                }
+                }
+                catch (IOException ex) {
                 }
                 frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
                 System.gc();
