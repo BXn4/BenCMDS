@@ -10,10 +10,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -43,7 +40,19 @@ public class GUI {
     String databaseFileUrl = null;
     String databaseUrl = null;
     String database = null;
+    String serverUrl = null;
+    String port = null;
+    String databaseName = null;
+    String username =  null;
+    String password = null;
+    String sqlCommand =
+            "CREATE TABLE IF NOT EXISTS `userData` (\n" +
+                    "`userId` INTEGER,\n" +
+                    "`userMoney` INTEGER,\n" +
+                    "`userBankClosed` INTEGER\n" +
+                    ");";
     JButton finishBtn = new JButton("Finish");
+    Map<String, Object> data = null;
     public void MakeGui() {
         logArea.setEditable(false);
         JScrollPane sp = new JScrollPane(logArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -96,6 +105,7 @@ public class GUI {
     }
 
     public void MakeSetUpGUI() {
+        loadConfig();
         JFrame frame = new JFrame("Set-up");
         JPanel panel = new JPanel();
         JTextField tokenTextField = new JTextField("");
@@ -116,6 +126,10 @@ public class GUI {
         frame.setResizable(false);
         frame.add(panel);
         frame.setVisible(true);
+        tokenTextField.setText(token);
+        if(tokenTextField.getText().length() > 0) {
+            nextBtn.setEnabled(true);
+        }
         tokenTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -340,12 +354,12 @@ public class GUI {
                         }
                     }
                     else {
-                        String serverUrl = serverUrlTxtFld.getText();
-                        String port = portTxtFld.getText();
-                        String databaseName = databaseTxtFld.getText();
-                        String username = usernameTxtFld.getText();
-                        String password = passwordTxtFld.getText();
-                        String databaseUrl = "jdbc:" + database + "://" + serverUrl + ":" + port + "/" + databaseName;
+                        serverUrl = serverUrlTxtFld.getText();
+                        port = portTxtFld.getText();
+                        databaseName = databaseTxtFld.getText();
+                        username = usernameTxtFld.getText();
+                        password = passwordTxtFld.getText();
+                        databaseUrl = "jdbc:" + database + "://" + serverUrl + ":" + port + "/" + databaseName;
                         conn = DriverManager.getConnection(databaseUrl, username, password);
                     }
                 } catch (SQLException e) {
@@ -359,58 +373,70 @@ public class GUI {
         createDatabase.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                File tempDatabase = null;
-                String sqlCommand =
-                        "CREATE TABLE IF NOT EXISTS `userData` (\n" +
-                                "`userId` INTEGER,\n" +
-                                "`userMoney` LONGINTEGER,\n" +
-                                "`userBankClosed` BOOLEAN\n" +
-                                ");";
-                try {
-                    tempDatabase = File.createTempFile("database", ".db");
-                } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(null, ex, "Create Database", JOptionPane.WARNING_MESSAGE);
-                }
-                String tempDatabaseUrl = tempDatabase.getAbsolutePath();
-                try {
-                    Connection conn = DriverManager.getConnection("jdbc:sqlite:" + tempDatabaseUrl);
-                    if (conn != null) {
-                        Statement stmt = conn.createStatement();
-                        stmt.execute(sqlCommand);
-                        stmt.close();
-                        conn.close();
-                    }
-                } catch (SQLException ex) {
-                }
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setSelectedFile(new File("database.db"));
-                fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
-                int result = fileChooser.showSaveDialog(frame);
-                if (result == JFileChooser.APPROVE_OPTION) {
-                    File file = fileChooser.getSelectedFile();
-                    Path path = file.toPath();
+                if (database == "sqlite") {
+                    File tempDatabase = null;
                     try {
-                        if(!file.exists()) {
-                            Files.copy(Path.of(tempDatabaseUrl), path);
-                            JOptionPane.showMessageDialog(null, "Database created.", "Create Database", JOptionPane.INFORMATION_MESSAGE);
-                            serverUrlTxtFld.setText(path.toString());
-                        }
-                        else {
-                            int dialogResult = JOptionPane.showConfirmDialog(null, "The file exists. Do you want to overwrite it?", "Create Database", JOptionPane.YES_NO_OPTION);
-                            if(dialogResult == JOptionPane.YES_OPTION) {
-                                Files.copy(Path.of(tempDatabaseUrl), path, StandardCopyOption.REPLACE_EXISTING);
-                                JOptionPane.showMessageDialog(null, "Database created.", "Create Database", JOptionPane.INFORMATION_MESSAGE);
-                                serverUrlTxtFld.setText(path.toString());
-                            }
-                            else {
-                                tempDatabase.delete();
-                            }
-                        }
+                        tempDatabase = File.createTempFile("database", ".db");
                     } catch (IOException ex) {
                         JOptionPane.showMessageDialog(null, ex, "Create Database", JOptionPane.WARNING_MESSAGE);
                     }
-                } else {
-                    tempDatabase.delete();
+                    String tempDatabaseUrl = tempDatabase.getAbsolutePath();
+                    try {
+                        Connection conn = DriverManager.getConnection("jdbc:sqlite:" + tempDatabaseUrl);
+                        if (conn != null) {
+                            Statement stmt = conn.createStatement();
+                            stmt.execute(sqlCommand);
+                            stmt.close();
+                            conn.close();
+                        }
+                    } catch (SQLException ex) {
+                    }
+                    JFileChooser fileChooser = new JFileChooser();
+                    fileChooser.setSelectedFile(new File("database.db"));
+                    fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+                    int result = fileChooser.showSaveDialog(frame);
+                    if (result == JFileChooser.APPROVE_OPTION) {
+                        File file = fileChooser.getSelectedFile();
+                        Path path = file.toPath();
+                        try {
+                            if (!file.exists()) {
+                                Files.copy(Path.of(tempDatabaseUrl), path);
+                                JOptionPane.showMessageDialog(null, "Database created.", "Create Database", JOptionPane.INFORMATION_MESSAGE);
+                                serverUrlTxtFld.setText(path.toString());
+                            } else {
+                                int dialogResult = JOptionPane.showConfirmDialog(null, "The file exists. Do you want to overwrite it?", "Create Database", JOptionPane.YES_NO_OPTION);
+                                if (dialogResult == JOptionPane.YES_OPTION) {
+                                    Files.copy(Path.of(tempDatabaseUrl), path, StandardCopyOption.REPLACE_EXISTING);
+                                    JOptionPane.showMessageDialog(null, "Database created.", "Create Database", JOptionPane.INFORMATION_MESSAGE);
+                                    serverUrlTxtFld.setText(path.toString());
+                                } else {
+                                    tempDatabase.delete();
+                                }
+                            }
+                        } catch (IOException ex) {
+                            JOptionPane.showMessageDialog(null, ex, "Create Database", JOptionPane.WARNING_MESSAGE);
+                        }
+                    } else {
+                        tempDatabase.delete();
+                    }
+                }
+                else {
+                    String createDatabaseStr = "CREATE DATABASE IF NOT EXISTS " + databaseName + ";";
+                    try {
+                        Connection conn = DriverManager.getConnection("jdbc:" + database + "://" + serverUrl + ":" + port + "/", username, password);
+                        if (conn != null) {
+                            Statement stmt = conn.createStatement();
+                            stmt.execute(createDatabaseStr);
+                            stmt.execute("USE " + databaseName);
+                            stmt.execute(sqlCommand);
+                            stmt.close();
+                            conn.close();
+                            JOptionPane.showMessageDialog(null, "Database created (" + databaseName + ").", "Create Database", JOptionPane.INFORMATION_MESSAGE);
+                        }
+                    } catch (SQLException ex) {
+                        System.out.println(ex);
+                        JOptionPane.showMessageDialog(null, ex, "Create Database", JOptionPane.WARNING_MESSAGE);
+                    }
                 }
             }
         });
@@ -431,6 +457,7 @@ public class GUI {
             public void check() {
                 if (serverUrlTxtFld.getText().length() > 0 || !serverUrlTxtFld.getText().equals("")) {
                     testConnectionBtn.setEnabled(true);
+                    serverUrl = serverUrlTxtFld.getText();
                 } else {
                     testConnectionBtn.setEnabled(false);
                 }
@@ -461,6 +488,7 @@ public class GUI {
                         usernameTxtFld.setEnabled(false);
                         passwordTxtFld.setEnabled(false);
                         portTxtFld.setText("");
+                        database = "sqlite";
                         sqliteSelected = true;
                         conectionIsSuccessFul = false;
                         checkBooleans();
@@ -646,6 +674,7 @@ public class GUI {
             public void check() {
                 if(portTxtFld.getText().length() > 0 || !portTxtFld.getText().equals("")) {
                     portTxtFldIsEmpty = false;
+                    port = portTxtFld.getText();
                     checkBooleans();
                 }
                 else {
@@ -671,6 +700,7 @@ public class GUI {
             public void check() {
                 if(databaseTxtFld.getText().length() > 0 || !databaseTxtFld.getText().equals("")) {
                     databaseNameTxtFldIsEmpty = false;
+                    databaseName = databaseTxtFld.getText();
                     checkBooleans();
                 }
                 else {
@@ -696,12 +726,31 @@ public class GUI {
             public void check() {
                 if(usernameTxtFld.getText().length() > 0 || !usernameTxtFld.getText().equals("")) {
                     usernameTxtFldIsEmpty = false;
+                    username = usernameTxtFld.getText();
                     checkBooleans();
                 }
                 else {
                     usernameTxtFldIsEmpty = true;
                     finishBtn.setEnabled(false);
                 }
+            }
+        });
+        passwordTxtFld.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                check();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                check();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                check();
+            }
+            public void check() {
+                password = passwordTxtFld.getText();
             }
         });
         finishBtn.addActionListener(new ActionListener() {
@@ -780,6 +829,30 @@ public class GUI {
                     finishBtn.setEnabled(false);
                 }
             }
+        }
+    }
+
+    private void loadConfig() {
+        Yaml yaml = new Yaml();
+        FileReader reader = null;
+        File file = new File("config.yaml");
+        if (file.exists()) {
+            InputStream inputStream = BenCMDS.class.getResourceAsStream("/config.yaml");
+            try {
+                reader = new FileReader("config.yaml");
+            } catch (FileNotFoundException e) {
+            }
+            data = yaml.load(reader);
+            try {
+                inputStream.close();
+                reader.close();
+            } catch (IOException e) {
+            }
+            try {
+                token = data.get("token").toString();
+            } catch (NullPointerException e) {
+            }
+            System.gc();
         }
     }
     public void serverCount(int servers) {
