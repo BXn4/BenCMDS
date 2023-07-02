@@ -24,7 +24,19 @@ public class GUI {
     public JLabel serversLbl = new JLabel("");
     public JTextArea logArea = new JTextArea("Nothing to do...");
     private String token = null;
-    private Map<String, Object> map = new LinkedHashMap<>();
+    private String status = null;
+    private String type = null;
+    private String streamUrl = null;
+    private String activity = null;
+    private String prefix = null;
+    String databaseFileUrl = null;
+    String databaseUrl = null;
+    String database = null;
+    String serverUrl = null;
+    String port = null;
+    String databaseName = null;
+    String username =  null;
+    String password = null;
     boolean streamTxtFldIsEmpty = true;
     boolean activityTxtFldIsEmpty = true;
     boolean prefixTxtFldIsEmpty = false;
@@ -36,15 +48,8 @@ public class GUI {
     boolean sqliteSelected = true;
     boolean conectionIsSuccessFul = false;
     boolean streamType = false;
+    private Map<String, Object> map = new LinkedHashMap<>();
     Connection conn = null;
-    String databaseFileUrl = null;
-    String databaseUrl = null;
-    String database = null;
-    String serverUrl = null;
-    String port = null;
-    String databaseName = null;
-    String username =  null;
-    String password = null;
     String sqlCommand =
             "CREATE TABLE IF NOT EXISTS `userData` (\n" +
                     "`userId` INTEGER,\n" +
@@ -228,10 +233,79 @@ public class GUI {
         portTxtFld.setEnabled(false);
         usernameTxtFld.setEnabled(false);
         passwordTxtFld.setEnabled(false);
-        testConnectionBtn.setEnabled(false);
         databaseTxtFld.setEnabled(false);
-        database = "sqlite";
-
+        File file = new File("config.yaml");
+        if (file.exists()) {
+            if (database.equals("")) {
+                database = "sqlite";
+            }
+            switch (status) {
+                case "online":
+                    statusCmbBx.setSelectedIndex(0);
+                    break;
+                case "idle":
+                    statusCmbBx.setSelectedIndex(1);
+                    break;
+                case "dnd":
+                    statusCmbBx.setSelectedIndex(2);
+                    break;
+                case "invisible":
+                    statusCmbBx.setSelectedIndex(3);
+                    break;
+            }
+            switch (type) {
+                case "listening":
+                    typeCmbBx.setSelectedIndex(0);
+                    break;
+                case "streaming":
+                    typeCmbBx.setSelectedIndex(1);
+                    break;
+                case "playing":
+                    typeCmbBx.setSelectedIndex(2);
+                    break;
+                case "competing":
+                    typeCmbBx.setSelectedIndex(3);
+                    break;
+                case "watching":
+                    typeCmbBx.setSelectedIndex(4);
+                    break;
+            }
+            activityTxtFld.setText(activity);
+            prefixTxtFld.setText(prefix);
+            switch (database) {
+                case "sqlite":
+                    databaseTypeCmbx.setSelectedIndex(0);
+                    break;
+                case "mysql":
+                    databaseTypeCmbx.setSelectedIndex(1);
+                    break;
+                case "mariadb":
+                    databaseTypeCmbx.setSelectedIndex(2);
+                    break;
+                case "postgresql":
+                    databaseTypeCmbx.setSelectedIndex(3);
+                    break;
+            }
+            serverUrlTxtFld.setText(databaseUrl);
+            portTxtFld.setText(port);
+            databaseTxtFld.setText(databaseName);
+            usernameTxtFld.setText(username);
+            passwordTxtFld.setText(password);
+            if(!serverUrlTxtFld.equals(""))
+            {
+                if(!database.equals("sqlite")) {
+                    portTxtFld.setEnabled(true);
+                    databaseTxtFld.setEnabled(true);
+                    usernameTxtFld.setEnabled(true);
+                    passwordTxtFld.setEnabled(true);
+                }
+                testConnectionBtn.setEnabled(true);
+            }
+            checkSetup();
+        }
+        else {
+            database = "sqlite";
+        }
         statusLbl.setBounds(10,10,100,20);
         typeLbl.setBounds(10,50,100,20);
         streamUrlLbl.setBounds(175,50,100,20);
@@ -850,9 +924,51 @@ public class GUI {
             }
             try {
                 token = data.get("token").toString();
+                status = data.get("status").toString();
+                type = data.get("type").toString();
+                streamUrl = data.get("streamUrl").toString();
+                activity = data.get("activity").toString();
+                prefix = data.get("prefix").toString();
+                database = data.get("database-type").toString();
+                databaseUrl = data.get("server").toString();
+                port = data.get("port").toString();
+                databaseName = data.get("database").toString();
+                username = data.get("username").toString();
+                password = data.get("password").toString();
+
             } catch (NullPointerException e) {
             }
             System.gc();
+        }
+    }
+    private void checkSetup() {
+        File file = new File("config.yaml");
+        if (file.exists()) {
+            if (!activity.equals("")) {
+                activityTxtFldIsEmpty = false;
+            }
+            if (!streamUrl.equals("")) {
+                streamTxtFldIsEmpty = false;
+            }
+            if (!prefix.equals("")) {
+                prefixTxtFldIsEmpty = false;
+            }
+            if (!databaseUrl.equals("")) {
+                serverTxtFldIsEmpty = false;
+            }
+            if (!port.equals("")) {
+                portTxtFldIsEmpty = false;
+            }
+            if (!databaseName.equals("")) {
+                databaseNameTxtFldIsEmpty = false;
+            }
+            if (!username.equals("")) {
+                usernameTxtFldIsEmpty = false;
+            }
+            if (!password.equals("")) {
+                passwordTxtFldIsEmpty = false;
+            }
+            checkBooleans();
         }
     }
     public void serverCount(int servers) {
