@@ -8,6 +8,8 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.sharding.ShardManager;
 import org.yaml.snakeyaml.Yaml;
+
+import javax.swing.*;
 import java.io.*;
 import java.util.Map;
 import java.time.format.DateTimeFormatter;
@@ -23,11 +25,11 @@ public class BenCMDS extends ListenerAdapter {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
         gui.appendLog("\n[" + dtf.format((now)) + "]" + " Starting");
-        String token = "";
-        String status = "";
-        String type = "";
-        String activity = "";
-        String streamUrl = "";
+        String token;
+        String status;
+        String type;
+        String activity;
+        String streamUrl = null;
         Yaml yaml = new Yaml();
         FileReader reader = null;
         InputStream inputStream = BenCMDS.class.getResourceAsStream("/config.yaml");
@@ -108,8 +110,20 @@ public class BenCMDS extends ListenerAdapter {
     }
 
     public static void main(String[] args) {
+        try {
+            Class.forName("org.sqlite.JDBC");
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("org.mariadb.jdbc.Driver");
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException ex) {
+            JOptionPane.showMessageDialog(null, ex, "Test connection",JOptionPane.INFORMATION_MESSAGE);
+        }
         GUI gui = new GUI();
         BenCMDS bot = new BenCMDS(gui);
         gui.MakeGui();
+    }
+
+    private void LoadConfig() {
+
     }
 }
