@@ -19,7 +19,6 @@ import java.nio.file.StandardCopyOption;
 import java.sql.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 public class GUI {
     public JLabel serversLbl = new JLabel("");
     public JTextArea logArea = new JTextArea("Nothing to do...");
@@ -107,6 +106,12 @@ public class GUI {
                 MakeSetUpGUI();
             }
         });
+        configBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MakeConfigGui();
+            }
+        });
     }
 
     public void MakeSetUpGUI() {
@@ -116,15 +121,15 @@ public class GUI {
         JTextField tokenTextField = new JTextField("");
         JButton nextBtn = new JButton("Next");
         nextBtn.setEnabled(false);
-        JButton cancelBtm = new JButton("Cancel");
+        JButton cancelBtn = new JButton("Cancel");
         JButton getTokenBtn = new JButton("Get Token");
         tokenTextField.setBounds(40,10,300,25);
         nextBtn.setBounds(270,80,100,20);
-        cancelBtm.setBounds(10,80,100,20);
+        cancelBtn.setBounds(10,80,100,20);
         getTokenBtn.setBounds(270,50,100,20);
         frame.add(tokenTextField);
         frame.add(nextBtn);
-        frame.add(cancelBtm);
+        frame.add(cancelBtn);
         frame.add(getTokenBtn);
         frame.setSize(400,150);
         frame.setLocationRelativeTo(null);
@@ -167,7 +172,7 @@ public class GUI {
                 MakeSetUpGUI2();
             }
         });
-        cancelBtm.addActionListener(new ActionListener() {
+        cancelBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
@@ -215,7 +220,7 @@ public class GUI {
         JComboBox databaseTypeCmbx = new JComboBox(databaseTypes);
         databaseTypeCmbx.setSelectedIndex(0);
 
-        JButton cancelBtm = new JButton("Cancel");
+        JButton cancelBtn = new JButton("Cancel");
         JButton browseBtn = new JButton("...");
         JButton testConnectionBtn = new JButton("Test connection");
         JButton createDatabase = new JButton("Create");
@@ -323,7 +328,7 @@ public class GUI {
         databaseTypeCmbx.setBounds(320,90,100,20);
 
         finishBtn.setBounds(530,280,100,20);
-        cancelBtm.setBounds(10,280,100,20);
+        cancelBtn.setBounds(10,280,100,20);
         browseBtn.setBounds(450,140,20,20);
         testConnectionBtn.setBounds(480,140,150,20);
         createDatabase.setBounds(550,170,80,20);
@@ -354,7 +359,7 @@ public class GUI {
         frame.add(databaseTypeCmbx);
 
         frame.add(finishBtn);
-        frame.add(cancelBtm);
+        frame.add(cancelBtn);
         frame.add(browseBtn);
         frame.add(testConnectionBtn);
         frame.add(createDatabase);
@@ -388,11 +393,6 @@ public class GUI {
                 System.out.println("sqliteSelected: " + sqliteSelected);
                 System.out.println("conectionIsSuccessFul: " + conectionIsSuccessFul);
                 System.out.println("streamType: " + streamType); */
-                try {
-                    Class.forName("org.sqlite.JDBC");
-                } catch (ClassNotFoundException ex) {
-                    JOptionPane.showMessageDialog(null, ex, "Test connection",JOptionPane.INFORMATION_MESSAGE);
-                }
                 databaseFileUrl = serverUrlTxtFld.getText();
                 Connection conn = connect();
                 if (conn != null) {
@@ -860,7 +860,7 @@ public class GUI {
                 System.gc();
             }
         });
-        cancelBtm.addActionListener(new ActionListener() {
+        cancelBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
@@ -868,7 +868,56 @@ public class GUI {
             }
         });
     }
-    public void checkBooleans() {
+    public void MakeConfigGui() {
+        loadConfig();
+        JFrame frame = new JFrame("Config");
+        JPanel panel = new JPanel();
+        JButton commandsBtn = new JButton("Commands");
+        JButton cancelBtn = new JButton("Cancel");
+        commandsBtn.setBounds(10,10,100,20);
+        cancelBtn.setBounds(10,230,100,20);
+        frame.add(commandsBtn);
+        frame.add(cancelBtn);
+        frame.setSize(400,300);
+        frame.setLocationRelativeTo(null);
+        frame.setResizable(false);
+        frame.add(panel);
+        frame.setVisible(true);
+        commandsBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MakeCommandsGui();
+            }
+        });
+        cancelBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+                System.gc();
+            }
+        });
+    }
+    private void MakeCommandsGui(){
+        loadConfig();
+        JFrame frame = new JFrame("Commands");
+        JPanel panel = new JPanel();
+        JButton cancelBtn = new JButton("Cancel");
+        cancelBtn.setBounds(10,230,100,20);
+        frame.add(cancelBtn);
+        frame.setSize(400,300);
+        frame.setLocationRelativeTo(null);
+        frame.setResizable(false);
+        frame.add(panel);
+        frame.setVisible(true);
+        cancelBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+                System.gc();
+            }
+        });
+    }
+    private void checkBooleans() {
         if(streamType) {
             if(sqliteSelected) {
                 if(!streamTxtFldIsEmpty && !activityTxtFldIsEmpty && !prefixTxtFldIsEmpty && !serverTxtFldIsEmpty && conectionIsSuccessFul) {
