@@ -36,14 +36,12 @@ public class BenCMDS extends ListenerAdapter {
         String streamUrl = null;
         Yaml yaml = new Yaml();
         FileReader reader = null;
-        InputStream inputStream = BenCMDS.class.getResourceAsStream("/config.yaml");
         try {
             reader = new FileReader("config.yaml");
         } catch (FileNotFoundException e) {
         }
         Map<String, Object> data = yaml.load(reader);
         try {
-            inputStream.close();
             reader.close();
         } catch (IOException e) {
         }
@@ -132,14 +130,12 @@ public class BenCMDS extends ListenerAdapter {
         FileReader reader = null;
         File file = new File("config.yaml");
         if (file.exists()) {
-            InputStream inputStream = BenCMDS.class.getResourceAsStream("/config.yaml");
             try {
                 reader = new FileReader("config.yaml");
             } catch (FileNotFoundException e) {
             }
             gui.data = yaml.load(reader);
             try {
-                inputStream.close();
                 reader.close();
             } catch (IOException e) {
             }
