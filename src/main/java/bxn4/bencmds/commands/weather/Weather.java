@@ -11,19 +11,24 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Weather extends ListenerAdapter {
     private String[] tempUnits = new String[] {"Celsius", "Fahrenheit"};
     private String[] speedUnits = new String[] {"Km/h", "m/s", "Mph", "Knots"};
+    private String[] precipitationUnits = new String[] {"mm", "Inch"};
     private Map<Integer, String> wmo = new HashMap<Integer, String>();
     @Override
     public void onCommandAutoCompleteInteraction(CommandAutoCompleteInteractionEvent event) {
@@ -40,6 +45,11 @@ public class Weather extends ListenerAdapter {
                             .map(word -> new Command.Choice(word, word)).collect(Collectors.toList());
                     event.replyChoices(optionsSpeed).queue();
                     break;
+                case "precipitation_unit":
+                    List<Command.Choice> optionsPrecipitation = Stream.of(precipitationUnits).filter(word -> word.startsWith(event.getFocusedOption().getValue()))
+                            .map(word -> new Command.Choice(word, word)).collect(Collectors.toList());
+                    event.replyChoices(optionsPrecipitation).queue();
+                    break;
             }
         }
     }
@@ -47,13 +57,22 @@ public class Weather extends ListenerAdapter {
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         String command = event.getName();
         if (command.equals("weather")) {
+            EmbedBuilder eb = new EmbedBuilder();
             event.deferReply().setEphemeral(true).queue();
             String tempUnit = null;
             String speedUnit = null;
+            String precipitationUnit = null;
             String place = event.getOption("place").getAsString();
             try {
                 tempUnit = event.getOption("temperature_unit").getAsString();
+            } catch (NullPointerException e) {
+            }
+            try {
                 speedUnit = event.getOption("speed_unit").getAsString();
+            } catch (NullPointerException e) {
+            }
+            try {
+                precipitationUnit = event.getOption("precipitation_unit").getAsString();
             } catch (NullPointerException e) {
             }
             if (!Arrays.asList(tempUnits).contains(tempUnit)) {
@@ -62,8 +81,13 @@ public class Weather extends ListenerAdapter {
             if (!Arrays.asList(speedUnits).contains(speedUnit)) {
                 speedUnit = "kmh";
             }
+            if (!Arrays.asList(precipitationUnits).contains(precipitationUnit)) {
+                precipitationUnit = "mm";
+            }
             tempUnit = tempUnit.toLowerCase();
             speedUnit = speedUnit.toLowerCase();
+            precipitationUnit = precipitationUnit.toLowerCase();
+            place = place.replace(" ", "+");
             try {
                 URL geocodingUrl = new URL("https://geocoding-api.open-meteo.com/v1/search?name=" + place + "&count=1&language=en&format=json");
                 HttpURLConnection connection = (HttpURLConnection) geocodingUrl.openConnection();
@@ -83,19 +107,25 @@ public class Weather extends ListenerAdapter {
                     Double latitude = result.getDouble("latitude");
                     Double longitude = result.getDouble("longitude");
                     String countryCode = result.getString("country_code").toLowerCase();
-                    getWeather(tempUnit, speedUnit, name, latitude, longitude, countryCode, event);
+                    getWeather(tempUnit, speedUnit, precipitationUnit, name, latitude, longitude, countryCode, event);
                 } else {
                 }
             } catch (JSONException e) {
-                event.getHook().sendMessage("Not found").setEphemeral(true).queue();
+                eb.setTitle("Not found");
+                eb.setColor(Color.RED);
+                event.getHook().sendMessageEmbeds(eb.build()).setEphemeral(true).queue();
             } catch (MalformedURLException e) {
-                event.getHook().sendMessage("Not found").setEphemeral(true).queue();
+                eb.setTitle("Not found");
+                eb.setColor(Color.RED);
+                event.getHook().sendMessageEmbeds(eb.build()).setEphemeral(true).queue();
             } catch (IOException e) {
-                event.getHook().sendMessage("Not found").setEphemeral(true).queue();
+                eb.setTitle("Not found");
+                eb.setColor(Color.RED);
+                event.getHook().sendMessageEmbeds(eb.build()).setEphemeral(true).queue();
             }
         }
     }
-    private void getWeather(String tempUnit, String speedUnit, String name, Double latitude, Double longitude, String countryCode, SlashCommandInteractionEvent event) {
+    private void getWeather(String tempUnit, String speedUnit, String precipitationUnit, String name, Double latitude, Double longitude, String countryCode, SlashCommandInteractionEvent event) {
         if(wmo.isEmpty() == true) {
             setWMO();
         }
@@ -112,11 +142,11 @@ public class Weather extends ListenerAdapter {
                 break;
         }
         try {
-            URL geocodingUrl = new URL("https://api.open-meteo.com/v1/forecast?latitude=" + latitude +
+            URL weatherUrl = new URL("https://api.open-meteo.com/v1/forecast?latitude=" + latitude +
                     "&longitude=" + longitude + "&hourly=temperature_2m,relativehumidity_2m,apparent_temperature," +
                     "precipitation_probability,precipitation,weathercode,windspeed_10m,uv_index&daily=temperature_2m_max," +
-                    "temperature_2m_min,sunrise,sunset&current_weather=true&temperature_unit=" + tempUnit + "&windspeed_unit=" + speedUnit + "&timezone=auto");
-            HttpURLConnection connection = (HttpURLConnection) geocodingUrl.openConnection();
+                    "temperature_2m_min,sunrise,sunset&current_weather=true&temperature_unit=" + tempUnit + "&windspeed_unit=" + speedUnit + "&precipitation_unit=" + precipitationUnit + "&timezone=auto");
+            HttpURLConnection connection = (HttpURLConnection) weatherUrl.openConnection();
             connection.setRequestMethod("GET");
             BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             StringBuilder response = new StringBuilder();
@@ -143,24 +173,45 @@ public class Weather extends ListenerAdapter {
                 Double maxTemp = weatherData.daily.temperature_2m_max[0];
                 Double humidity = weatherData.hourly.relativehumidity_2m[i];
                 Double precipitationProbability = weatherData.hourly.precipitation_probability[i];
+                Integer uvIndex = weatherData.hourly.uv_index[i];
+                String sunrise = weatherData.daily.sunrise[0];
+                String sunset = weatherData.daily.sunset[0];
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+                LocalTime sunriseTime = LocalTime.parse(sunrise, dateTimeFormatter);
+                LocalTime sunsetTime = LocalTime.parse(sunset, dateTimeFormatter);
+                // Icon from https://icons8.com
+                String dayNightEmoji = "<:sun:1130253394808934521>";
+                if(weatherData.current_weather.is_day == 0) {
+                    // Icon from https://icons8.com
+                    dayNightEmoji = "<:night:1130253392720183378>";
+                }
+                sunrise = sunriseTime.toString();
+                sunset = sunsetTime.toString();
                 eb.setTitle("Current weather in " + ":flag_" + countryCode + ": " + name);
                 eb.addField("Weather:", weather, false);
                 if(temperature > 15) {
-                    eb.addField("<:temp_hot:1130149205026017280>Temperature:", temperature + tempUnit, true);
+                    eb.setColor(Color.ORANGE);
+                    // Icon from https://icons8.com
+                    eb.addField("<:temp_hot:1130149205026017280> Temperature:", temperature + tempUnit, true);
                 }
                 else {
+                    eb.setColor(Color.CYAN);
+                    // Icon from https://icons8.com
                     eb.addField("<:temp_cold:1130149202794643566> Temperature:", temperature + tempUnit, true);
                 }
                 eb.addField("Feels like:", feelslike.toString() + tempUnit, true);
                 eb.addField("Min/Max", + minTemp + "/" + maxTemp + tempUnit, true);
-                eb.addField("Wind speed:", windSpeed + speedUnit,true);
+                // Icon from: https://www.freepik.com/icon/windsock_7137989#position=32&page=5&fromView=keyword by: Iconic Panda
+                eb.addField("<:wind:1130256021546356876> Wind speed:", windSpeed + speedUnit,true);
+                eb.addField("UV index:", uvIndex.toString(), true);
                 eb.addField("Humidity:", humidity + "%", true);
-                eb.addField("Precipitation probability:", + precipitationProbability + "%", false);
+                eb.addField(":droplet: Prec. prob.:", + precipitationProbability + "%", true);
                 if(precipitationProbability != 0) {
                     Double precipitation = weatherData.hourly.precipitation[i];
-                    Double inch = precipitation * 0.0393700787;
-                    eb.addField("Precipitation:", + precipitation + "mm - " + Math.round(inch) + "(In)",  false);
+                    eb.addField("Precipitation:", + precipitation + precipitationUnit,  true);
                 }
+                eb.addField(dayNightEmoji + "Sunrise - Sunset:", sunrise + "-" + sunset, false);
+                eb.addField("🔗 Source: ", "[Open-Meteo]" + "(https://open-meteo.com)", false);
                 event.getHook().sendMessageEmbeds(eb.build()).setEphemeral(true).queue();
                 System.gc();
             }
