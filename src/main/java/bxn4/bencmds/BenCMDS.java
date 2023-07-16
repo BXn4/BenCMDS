@@ -2,6 +2,7 @@ package bxn4.bencmds;
 
 import bxn4.bencmds.commands.Commands;
 import bxn4.bencmds.commands.EventListener;
+import bxn4.bencmds.commands.weather.Weather;
 import bxn4.bencmds.commands.Wikipedia;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -52,6 +53,18 @@ public class BenCMDS extends ListenerAdapter {
         if(data.get("streamUrl") != null) {
             streamUrl = data.get("streamUrl").toString();
         }
+        gui.token = gui.data.get("token").toString();
+        gui.status = gui.data.get("status").toString();
+        gui.type = gui.data.get("type").toString();
+        gui.streamUrl = gui.data.get("streamUrl").toString();
+        gui.activity = gui.data.get("activity").toString();
+        gui.prefix = gui.data.get("prefix").toString();
+        gui.database = gui.data.get("database-type").toString();
+        gui.databaseUrl = gui.data.get("server").toString();
+        gui.port = gui.data.get("port").toString();
+        gui.databaseName = gui.data.get("database").toString();
+        gui.username = gui.data.get("username").toString();
+        gui.password = gui.data.get("password").toString();
         DefaultShardManagerBuilder bot = DefaultShardManagerBuilder.createDefault(token);
         switch (status) {
             case "online":
@@ -92,7 +105,7 @@ public class BenCMDS extends ListenerAdapter {
             now = LocalDateTime.now();
             gui.appendLog("\n[" + dtf.format(now) + "]" + " Invalid token!");
         }
-        shardManager.addEventListener(this, new EventListener(), new Commands(), new Wikipedia());
+        shardManager.addEventListener(this, new EventListener(), new Commands(), new Wikipedia(), new Weather());
     }
 
     public void StopBot() {
@@ -131,7 +144,7 @@ public class BenCMDS extends ListenerAdapter {
         File file = new File("config.yaml");
         if (file.exists()) {
             try {
-                reader = new FileReader("config.yaml");
+                reader = new FileReader(file);
             } catch (FileNotFoundException e) {
             }
             gui.data = yaml.load(reader);
