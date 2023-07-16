@@ -21,6 +21,7 @@ public class Wikipedia extends ListenerAdapter {
         String command = event.getName();
         switch (command) {
             case "wiki":
+                event.deferReply().setEphemeral(true).queue();
                 String query = null;
                 try {
                     query = event.getOption("query").getAsString();
@@ -54,7 +55,12 @@ public class Wikipedia extends ListenerAdapter {
                         else {
                             eb.setFooter("Articles found: 0");
                         }
-                        event.replyEmbeds(eb.build()).setEphemeral(true).queue();
+                        event.getHook().sendMessageEmbeds(eb.build()).setEphemeral(true).queue();
+                        response = null;
+                        data = null;
+                        titles = null;
+                        urls = null;
+                        System.gc();
                     } catch (MalformedURLException e) {
                     } catch (IOException e) {
                     }
@@ -64,18 +70,20 @@ public class Wikipedia extends ListenerAdapter {
                     try {
                         String article = event.getOption("article").getAsString();
                         Jwiki jwiki = new Jwiki(article);
+
+                        // NEED TITLE FORMATTING
                         String titleRaw = jwiki.getDisplayTitle();
                         String title = titleRaw.replace("<span class=\"mw-page-title-main\">", "").replace("</span>", "");
                         String url = title.replace(" ", "_");
                         eb.addField(title, jwiki.getExtractText(), false);
                         eb.addField("🔗 Source: ", "[Wikipedia]" + "(https://wikipedia.org/wiki/" + url + ")", false);
                         eb.setThumbnail(jwiki.getImageURL());
-                        event.replyEmbeds(eb.build()).setEphemeral(true).queue();
+                        event.getHook().sendMessageEmbeds(eb.build()).setEphemeral(true).queue();
                     }
                     catch (NullPointerException e) {
                         eb.setTitle("Not found");
                         eb.setColor(Color.RED);
-                        event.replyEmbeds(eb.build()).setEphemeral(true).queue();
+                        event.getHook().sendMessageEmbeds(eb.build()).setEphemeral(true).queue();
                     }
                 }
                 break;
