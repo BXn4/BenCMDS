@@ -1,5 +1,8 @@
 package bxn4.bencmds;
 
+import bxn4.bencmds.commands.weather.WeatherData;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jtattoo.plaf.graphite.GraphiteLookAndFeel;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -7,6 +10,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -58,6 +62,11 @@ public class GUI {
     JButton finishBtn = new JButton("Finish");
     Map<String, Object> data = null;
     public void MakeGui() {
+        try {
+            UIManager.setLookAndFeel(GraphiteLookAndFeel.class.getName());
+        }
+        catch (Exception e) {
+        }
         logArea.setEditable(false);
         JScrollPane sp = new JScrollPane(logArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         BenCMDS benCMDS = new BenCMDS(this);
@@ -410,6 +419,7 @@ public class GUI {
                             conn = DriverManager.getConnection(databaseUrl);
                         }
                         else {
+                            Toolkit.getDefaultToolkit().beep();
                             JOptionPane.showMessageDialog(null, "File not found!", "Test connection",JOptionPane.WARNING_MESSAGE);
                             conectionIsSuccessFul = false;
                             checkBooleans();
@@ -816,6 +826,56 @@ public class GUI {
                 password = passwordTxtFld.getText();
             }
         });
+        /* SOON
+        finishBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                DumperOptions dumper = new DumperOptions();
+                Config config = new Config();
+                map.put("token", token);
+                map.put("status", statusCmbBx.getSelectedItem());
+                map.put("type", typeCmbBx.getSelectedItem());
+                map.put("streamUrl", streamUrlTxtFld.getText());
+                map.put("activity", activityTxtFld.getText());
+                map.put("prefix", prefixTxtFld.getText());
+                map.put("database-type", database);
+                map.put("server", serverUrlTxtFld.getText());
+                map.put("port", portTxtFld.getText());
+                map.put("database", databaseTxtFld.getText());
+                map.put("username", usernameTxtFld.getText());
+                map.put("password", passwordTxtFld.getText());
+
+                // IF YOU FOUND A MISTAKE: https://github.com/BXn4/BenCMDS/issues
+                config.token = token;
+                config.status = statusCmbBx.getSelectedItem().toString();
+                config.type = typeCmbBx.getSelectedItem().toString();
+                config.streamUrl = streamUrlTxtFld.getText();
+                config.activity = activityTxtFld.getText();
+                config.prefix = prefixTxtFld.getText();
+                config.databaseType = database;
+                config.server = serverUrlTxtFld.getText();
+                config.port = portTxtFld.getText();
+                config.database = databaseTxtFld.getText();
+                config.username = usernameTxtFld.getText();
+                config.password = passwordTxtFld.getText();
+                dumper.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+                Yaml yaml = new Yaml(dumper);
+                try {
+                    InputStream inputStream = BenCMDS.class.getResourceAsStream("/config.yaml");
+                    FileWriter writer = new FileWriter("config.yaml");
+                yaml.dump(map, writer);
+                try {
+                    writer.close();
+                } catch (IOException ex) {
+                }
+                }
+                catch (IOException ex) {
+                }
+                frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+                System.gc();
+            }
+        });
+         */
         finishBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -837,14 +897,23 @@ public class GUI {
                 try {
                     InputStream inputStream = BenCMDS.class.getResourceAsStream("/config.yaml");
                     FileWriter writer = new FileWriter("config.yaml");
-                yaml.dump(map, writer);
-                try {
-                    writer.close();
-                } catch (IOException ex) {
-                }
+                    yaml.dump(map, writer);
+                    try {
+                        writer.close();
+                    } catch (IOException ex) {
+                    }
                 }
                 catch (IOException ex) {
                 }
+                BenCMDS main = new BenCMDS(GUI.this);
+                main.LoadConfig();
+                frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+                System.gc();
+            }
+        });
+        cancelBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
                 frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
                 System.gc();
             }
