@@ -1,6 +1,9 @@
 # BenCMDS
 Customize the BenCMDS Discord bot, with custom commands!
 User friendly, and highly customizable!
+SDK: 17.0.7 -> To build
+JRE: 17.0.7 -> To run
+
 #### Supports:
 - SQLite
 - MySQL
