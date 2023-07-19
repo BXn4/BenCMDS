@@ -12,5 +12,5 @@ public class Hourly {
     public Double[] precipitation;
     public Integer[] weathercode;
     public String[] windspeed_10m;
-    public String[] uv_index;
+    public Integer[] uv_index;
 }

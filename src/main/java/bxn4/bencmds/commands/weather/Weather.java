@@ -3,7 +3,6 @@ package bxn4.bencmds.commands.weather;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import org.jetbrains.annotations.NotNull;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,36 +24,33 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Weather extends ListenerAdapter {
-    private String[] tempUnits = new String[] {"Celsius", "Fahrenheit"};
-    private String[] speedUnits = new String[] {"Km/h", "m/s", "Mph", "Knots"};
-    private String[] precipitationUnits = new String[] {"mm", "Inch"};
-    private Map<Integer, String> wmo = new HashMap<Integer, String>();
-    @Override
-    public void onCommandAutoCompleteInteraction(CommandAutoCompleteInteractionEvent event) {
-        String command = event.getName();
-        if (command.equals("weather")) {
-            switch (event.getFocusedOption().getName()) {
-                case "temperature_unit":
-                    List<Command.Choice> optionsTemp = Stream.of(tempUnits).filter(word -> word.startsWith(event.getFocusedOption().getValue()))
-                            .map(word -> new Command.Choice(word, word)).collect(Collectors.toList());
-                    event.replyChoices(optionsTemp).queue();
-                    break;
-                case "speed_unit":
-                    List<Command.Choice> optionsSpeed = Stream.of(speedUnits).filter(word -> word.startsWith(event.getFocusedOption().getValue()))
-                            .map(word -> new Command.Choice(word, word)).collect(Collectors.toList());
-                    event.replyChoices(optionsSpeed).queue();
-                    break;
-                case "precipitation_unit":
-                    List<Command.Choice> optionsPrecipitation = Stream.of(precipitationUnits).filter(word -> word.startsWith(event.getFocusedOption().getValue()))
-                            .map(word -> new Command.Choice(word, word)).collect(Collectors.toList());
-                    event.replyChoices(optionsPrecipitation).queue();
-                    break;
-            }
+public class Weather {
+    private static String[] tempUnits = new String[] {"Celsius", "Fahrenheit"};
+    private static String[] speedUnits = new String[] {"Km/h", "m/s", "Mph", "Knots"};
+    private static String[] precipitationUnits = new String[] {"mm", "Inch"};
+    private static Map<Integer, String> wmo = new HashMap<Integer, String>();
+
+    public static void weatherAutoComplete(CommandAutoCompleteInteractionEvent event) {
+        switch (event.getFocusedOption().getName()) {
+            case "temperature_unit":
+                List<Command.Choice> optionsTemp = Stream.of(tempUnits).filter(word -> word.startsWith(event.getFocusedOption().getValue()))
+                        .map(word -> new Command.Choice(word, word)).collect(Collectors.toList());
+                event.replyChoices(optionsTemp).queue();
+                break;
+            case "speed_unit":
+                List<Command.Choice> optionsSpeed = Stream.of(speedUnits).filter(word -> word.startsWith(event.getFocusedOption().getValue()))
+                        .map(word -> new Command.Choice(word, word)).collect(Collectors.toList());
+                event.replyChoices(optionsSpeed).queue();
+                break;
+            case "precipitation_unit":
+                List<Command.Choice> optionsPrecipitation = Stream.of(precipitationUnits).filter(word -> word.startsWith(event.getFocusedOption().getValue()))
+                        .map(word -> new Command.Choice(word, word)).collect(Collectors.toList());
+                event.replyChoices(optionsPrecipitation).queue();
+                break;
         }
     }
-    @Override
-    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+
+    public static void weather(@NotNull SlashCommandInteractionEvent event) {
         String command = event.getName();
         if (command.equals("weather")) {
             EmbedBuilder eb = new EmbedBuilder();
@@ -125,7 +121,7 @@ public class Weather extends ListenerAdapter {
             }
         }
     }
-    private void getWeather(String tempUnit, String speedUnit, String precipitationUnit, String name, Double latitude, Double longitude, String countryCode, SlashCommandInteractionEvent event) {
+    private static void getWeather(String tempUnit, String speedUnit, String precipitationUnit, String name, Double latitude, Double longitude, String countryCode, SlashCommandInteractionEvent event) {
         if(wmo.isEmpty() == true) {
             setWMO();
         }
@@ -195,7 +191,7 @@ public class Weather extends ListenerAdapter {
                     eb.addField("<:temp_hot:1130149205026017280> Temperature:", temperature + tempUnit, true);
                 }
                 else {
-                    eb.setColor(Color.CYAN);
+                    eb.setColor(new Color(13, 114, 191));
                     // Icon from https://icons8.com
                     eb.addField("<:temp_cold:1130149202794643566> Temperature:", temperature + tempUnit, true);
                 }
@@ -222,7 +218,7 @@ public class Weather extends ListenerAdapter {
         } catch (IOException e) {
         }
     }
-    private void setWMO() {
+    private static void setWMO() {
         wmo.put(0, "Clear sky");
         wmo.put(1, "Mainly clear");
         wmo.put(2, "Partly cloudy");
