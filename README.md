@@ -1,6 +1,5 @@
 # BenCMDS
 Customize the BenCMDS Discord bot, with custom commands!
-<br>
 User friendly, and highly customizable!
 #### Supports:
 - SQLite
@@ -8,11 +7,11 @@ User friendly, and highly customizable!
 - MariaDB
 - PostgreSQL
 <br>
-<center>
+<h1 align="center">
 <img src="https://github.com/BXn4/BenCMDS/assets/78733248/65ebb351-fd6e-44ca-9698-7695e9f23a67"/>
 <br> 
 <img src="https://github.com/BXn4/BenCMDS/assets/78733248/e1a61a0f-764e-4900-99f3-7aff014d38d0"/> 
-</center>
+</h1>
 
 ## Dependencies:
 <details>
@@ -36,6 +35,7 @@ User friendly, and highly customizable!
 ## APIs:
 <details>
 <summary></summary>
+
 - [Wikipedia API](https://en.wikipedia.org/w/api.php)
 - [Geocoding API](https://open-meteo.com/en/docs/geocoding-api)
 - [Weather Forecast API](https://open-meteo.com/en/docs)
