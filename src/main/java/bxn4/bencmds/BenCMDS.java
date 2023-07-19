@@ -2,8 +2,7 @@ package bxn4.bencmds;
 
 import bxn4.bencmds.commands.Commands;
 import bxn4.bencmds.commands.EventListener;
-import bxn4.bencmds.commands.weather.Weather;
-import bxn4.bencmds.commands.Wikipedia;
+import bxn4.bencmds.commands.reminder.Reminder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
@@ -14,6 +13,7 @@ import net.dv8tion.jda.api.sharding.ShardManager;
 import org.yaml.snakeyaml.Yaml;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.util.Map;
 import java.time.format.DateTimeFormatter;
@@ -22,11 +22,58 @@ import java.time.LocalDateTime;
 public class BenCMDS extends ListenerAdapter {
     private ShardManager shardManager;
     private GUI gui;
+
+    // SOON
+    private Config config;
+
     public BenCMDS(GUI gui) {
         this.gui = gui;
         LoadConfig();
+        /* SOON
+        try {
+            config.LoadConfig();
+        } catch (NullPointerException e) {
+        } */
     }
+
     public void StartBot() {
+        /* SOON
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        gui.appendLog("\n[" + dtf.format((now)) + "]" + " Starting");
+        Yaml yaml = new Yaml();
+        FileReader reader = null;
+        try {
+            reader = new FileReader("config.yaml");
+        } catch (FileNotFoundException e) {
+        }
+        Map<String, Object> data = yaml.load(reader);
+        try {
+            reader.close();
+        } catch (IOException e) {
+        }
+        String token = config.token;
+        String status = config.status;
+        String type = config.type;
+        String activity = config.activity;
+        String streamUrl = null;
+        if (config.streamUrl != null) {
+            streamUrl = config.streamUrl;
+            gui.streamUrl = config.streamUrl;
+        }
+        gui.token = config.token;
+        gui.status = config.status;
+        gui.type = config.type;
+        gui.activity = config.activity;
+        gui.prefix = config.prefix;
+        gui.database = config.database;
+        gui.databaseUrl = config.server;
+        gui.port = config.port;
+        gui.databaseName = config.database;
+        gui.username = config.username;
+        gui.password = config.password;
+        DefaultShardManagerBuilder bot = DefaultShardManagerBuilder.createDefault(token);
+         */
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
         gui.appendLog("\n[" + dtf.format((now)) + "]" + " Starting");
@@ -53,18 +100,6 @@ public class BenCMDS extends ListenerAdapter {
         if(data.get("streamUrl") != null) {
             streamUrl = data.get("streamUrl").toString();
         }
-        gui.token = gui.data.get("token").toString();
-        gui.status = gui.data.get("status").toString();
-        gui.type = gui.data.get("type").toString();
-        gui.streamUrl = gui.data.get("streamUrl").toString();
-        gui.activity = gui.data.get("activity").toString();
-        gui.prefix = gui.data.get("prefix").toString();
-        gui.database = gui.data.get("database-type").toString();
-        gui.databaseUrl = gui.data.get("server").toString();
-        gui.port = gui.data.get("port").toString();
-        gui.databaseName = gui.data.get("database").toString();
-        gui.username = gui.data.get("username").toString();
-        gui.password = gui.data.get("password").toString();
         DefaultShardManagerBuilder bot = DefaultShardManagerBuilder.createDefault(token);
         switch (status) {
             case "online":
@@ -99,13 +134,13 @@ public class BenCMDS extends ListenerAdapter {
         }
         try {
             shardManager = bot.build();
-        }
-        catch (InvalidTokenException ex) {
+        } catch (InvalidTokenException ex) {
+            Toolkit.getDefaultToolkit().beep();
             dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
             now = LocalDateTime.now();
             gui.appendLog("\n[" + dtf.format(now) + "]" + " Invalid token!");
         }
-        shardManager.addEventListener(this, new EventListener(), new Commands(), new Wikipedia(), new Weather());
+        shardManager.addEventListener(this, new EventListener(), new Commands());
     }
 
     public void StopBot() {
@@ -131,14 +166,14 @@ public class BenCMDS extends ListenerAdapter {
             Class.forName("org.mariadb.jdbc.Driver");
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException ex) {
-            JOptionPane.showMessageDialog(null, ex, "Test connection",JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, ex, "Test connection", JOptionPane.INFORMATION_MESSAGE);
         }
         GUI gui = new GUI();
         BenCMDS bot = new BenCMDS(gui);
         gui.MakeGui();
     }
 
-    private void LoadConfig() {
+    public void LoadConfig() {
         Yaml yaml = new Yaml();
         FileReader reader = null;
         File file = new File("config.yaml");
