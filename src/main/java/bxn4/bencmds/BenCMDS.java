@@ -1,208 +1,108 @@
 package bxn4.bencmds;
 
-import bxn4.bencmds.commands.Commands;
-import bxn4.bencmds.commands.EventListener;
-import bxn4.bencmds.commands.reminder.Reminder;
+import bxn4.bencmds.GUI.MainGUI;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.exceptions.InvalidTokenException;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.sharding.ShardManager;
-import org.yaml.snakeyaml.Yaml;
 
-import javax.swing.*;
 import java.awt.*;
-import java.io.*;
-import java.util.Map;
-import java.time.format.DateTimeFormatter;
-import java.time.LocalDateTime;
 
-public class BenCMDS extends ListenerAdapter {
+public class BenCMDS {
+    private MainGUI mainGUI = new MainGUI();
     private ShardManager shardManager;
-    private GUI gui;
-
-    // SOON
-    private Config config;
-
-    public BenCMDS(GUI gui) {
-        this.gui = gui;
-        LoadConfig();
-        /* SOON
-        try {
-            config.LoadConfig();
-        } catch (NullPointerException e) {
-        } */
-    }
-
-    public void StartBot() {
-        /* SOON
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now();
-        gui.appendLog("\n[" + dtf.format((now)) + "]" + " Starting");
-        Yaml yaml = new Yaml();
-        FileReader reader = null;
-        try {
-            reader = new FileReader("config.yaml");
-        } catch (FileNotFoundException e) {
-        }
-        Map<String, Object> data = yaml.load(reader);
-        try {
-            reader.close();
-        } catch (IOException e) {
-        }
-        String token = config.token;
-        String status = config.status;
-        String type = config.type;
-        String activity = config.activity;
-        String streamUrl = null;
-        if (config.streamUrl != null) {
-            streamUrl = config.streamUrl;
-            gui.streamUrl = config.streamUrl;
-        }
-        gui.token = config.token;
-        gui.status = config.status;
-        gui.type = config.type;
-        gui.activity = config.activity;
-        gui.prefix = config.prefix;
-        gui.database = config.database;
-        gui.databaseUrl = config.server;
-        gui.port = config.port;
-        gui.databaseName = config.database;
-        gui.username = config.username;
-        gui.password = config.password;
-        DefaultShardManagerBuilder bot = DefaultShardManagerBuilder.createDefault(token);
-         */
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now();
-        gui.appendLog("\n[" + dtf.format((now)) + "]" + " Starting");
-        String token;
-        String status;
-        String type;
-        String activity;
-        String streamUrl = null;
-        Yaml yaml = new Yaml();
-        FileReader reader = null;
-        try {
-            reader = new FileReader("config.yaml");
-        } catch (FileNotFoundException e) {
-        }
-        Map<String, Object> data = yaml.load(reader);
-        try {
-            reader.close();
-        } catch (IOException e) {
-        }
-        token = data.get("token").toString();
-        status = data.get("status").toString();
-        type = data.get("type").toString();
-        activity = data.get("activity").toString();
-        if(data.get("streamUrl") != null) {
-            streamUrl = data.get("streamUrl").toString();
-        }
-        DefaultShardManagerBuilder bot = DefaultShardManagerBuilder.createDefault(token);
-        switch (status) {
-            case "online":
-                bot.setStatus(OnlineStatus.ONLINE);
-                break;
-            case "idle":
-                bot.setStatus(OnlineStatus.IDLE);
-                break;
-            case "dnd":
-                bot.setStatus(OnlineStatus.DO_NOT_DISTURB);
-                break;
-            case "invisible":
-                bot.setStatus(OnlineStatus.INVISIBLE);
-                break;
-        }
-        switch (type) {
-            case "listening":
-                bot.setActivity(Activity.listening(activity));
-                break;
-            case "streaming":
-                bot.setActivity(Activity.streaming(activity, streamUrl));
-                break;
-            case "playing":
-                bot.setActivity(Activity.playing(activity));
-                break;
-            case "competing":
-                bot.setActivity(Activity.competing(activity));
-                break;
-            case "watching":
-                bot.setActivity(Activity.watching(activity));
-                break;
-        }
-        try {
-            shardManager = bot.build();
-        } catch (InvalidTokenException ex) {
-            Toolkit.getDefaultToolkit().beep();
-            dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
-            now = LocalDateTime.now();
-            gui.appendLog("\n[" + dtf.format(now) + "]" + " Invalid token!");
-        }
-        shardManager.addEventListener(this, new EventListener(), new Commands());
-    }
-
-    public void StopBot() {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now();
-        gui.appendLog("\n[" + dtf.format(now) + "]" + " Stopped");
-        shardManager.shutdown();
-    }
-
-    @Override
-    public void onReady(ReadyEvent event) {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now();
-        int servers = event.getGuildTotalCount();
-        gui.appendLog("\n[" + dtf.format((now)) + "]" + " Listening on: " + servers + " servers");
-        gui.serverCount(servers);
+    static String token;
+    static String status;
+    static String type;
+    static String activity;
+    static String streamUrl;
+    static String skin;
+    public BenCMDS(MainGUI mainGUI) {
+        shardManager = null;
     }
 
     public static void main(String[] args) {
+        MainGUI mainGUI = new MainGUI();
+        BenCMDS benCMDS = new BenCMDS(mainGUI);
+        Config config = Config.getInstance();
+        config.loadConfig();
+        if(skin == null) {
+            skin = "Graphite";
+        }
+        mainGUI.makeGUI(skin);
         try {
             Class.forName("org.sqlite.JDBC");
             Class.forName("com.mysql.cj.jdbc.Driver");
             Class.forName("org.mariadb.jdbc.Driver");
             Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException ex) {
-            JOptionPane.showMessageDialog(null, ex, "Test connection", JOptionPane.INFORMATION_MESSAGE);
+        } catch (ClassNotFoundException e) {
         }
-        GUI gui = new GUI();
-        BenCMDS bot = new BenCMDS(gui);
-        gui.MakeGui();
     }
 
-    public void LoadConfig() {
-        Yaml yaml = new Yaml();
-        FileReader reader = null;
-        File file = new File("config.yaml");
-        if (file.exists()) {
-            try {
-                reader = new FileReader(file);
-            } catch (FileNotFoundException e) {
-            }
-            gui.data = yaml.load(reader);
-            try {
-                reader.close();
-            } catch (IOException e) {
-            }
-            try {
-                gui.token = gui.data.get("token").toString();
-                gui.status = gui.data.get("status").toString();
-                gui.type = gui.data.get("type").toString();
-                gui.streamUrl = gui.data.get("streamUrl").toString();
-                gui.activity = gui.data.get("activity").toString();
-                gui.prefix = gui.data.get("prefix").toString();
-                gui.database = gui.data.get("database-type").toString();
-                gui.databaseUrl = gui.data.get("server").toString();
-                gui.port = gui.data.get("port").toString();
-                gui.databaseName = gui.data.get("database").toString();
-                gui.username = gui.data.get("username").toString();
-                gui.password = gui.data.get("password").toString();
-            } catch (NullPointerException e) {
-            }
-            System.gc();
+    private void set() {
+        Config config = Config.getInstance();
+        token = config.botToken;
+        if(activity == null) {
+            activity = "Be cool!";
+            System.out.println("[WARNING] The botActivity in config.yaml is empty. Using the default value.");
         }
+        if(status == null) {
+            status = "online";
+            System.out.println("[WARNING] The botStatus in config.yaml is empty. Using the default value.");
+        }
+        if(type == null) {
+            type = "playing";
+            System.out.println("[WARNING] The botActivityType in config.yaml is empty. Using the default value.");
+        }
+        if(streamUrl == null && type.equals("streaming")) {
+            streamUrl = "https://twitch.tv/discord";
+            System.out.println("[WARNING] The botStreamUrl in config.yaml is empty. Using the default value.");
+        }
+    }
+
+    public void startBot() {
+        set();
+        System.out.println("[INFO] Starting");
+        // NEED TO DO
+        // mainGUI.appendLog("Starting");
+        if(token != null) {
+            if (token.length() != 0) {
+                DefaultShardManagerBuilder bot = DefaultShardManagerBuilder.createDefault(token);
+                switch (status) {
+                    case "online" -> bot.setStatus(OnlineStatus.ONLINE);
+                    case "idle" -> bot.setStatus(OnlineStatus.IDLE);
+                    case "dnd" -> bot.setStatus(OnlineStatus.DO_NOT_DISTURB);
+                    case "invisible" -> bot.setStatus(OnlineStatus.INVISIBLE);
+                    default -> bot.setStatus(OnlineStatus.ONLINE);
+                }
+                switch (type) {
+                    case "listening" -> bot.setActivity(Activity.listening(activity));
+                    case "streaming" -> bot.setActivity(Activity.streaming(activity, streamUrl));
+                    case "playing" -> bot.setActivity(Activity.playing(activity));
+                    case "competing" -> bot.setActivity(Activity.competing(activity));
+                    case "watching" -> bot.setActivity(Activity.watching(activity));
+                    default -> bot.setActivity(Activity.playing(activity));
+                }
+                try {
+                    shardManager = bot.build();
+                }
+                catch (InvalidTokenException e) {
+                    Toolkit.getDefaultToolkit().beep();
+                    System.out.println("[ERROR] INVALID TOKEN!");
+
+                    // NEED TO DO
+                    // mainGUI.appendLog("Invalid token!");
+                }
+            }
+
+        }
+        else {
+            System.out.println("[ERROR] Cannot start bot, because the TOKEN IS EMPTY!");
+        }
+    }
+
+    public void stopBot() {
+
     }
 }
