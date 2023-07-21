@@ -1,6 +1,7 @@
 package bxn4.bencmds.GUI;
 
 import bxn4.bencmds.BenCMDS;
+import bxn4.bencmds.Config;
 import com.jtattoo.plaf.acryl.AcrylLookAndFeel;
 import com.jtattoo.plaf.aero.AeroLookAndFeel;
 import com.jtattoo.plaf.aluminium.AluminiumLookAndFeel;
@@ -20,10 +21,9 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-
 public class MainGUI {
     public JLabel serversLbl = new JLabel("");
-    public JTextArea logArea = new JTextArea();
+    public JTextArea logArea = new JTextArea("Nothing to do...");
     public void makeGUI(String skin) {
         try {
             switch (skin) {
@@ -46,6 +46,7 @@ public class MainGUI {
         }
         catch (Exception e) {
         }
+        Config config = Config.getInstance();
         JMenuBar menuBar;
         JMenu optionsMenu, skinSubMenu;
         JMenu botMenu, startStop;
@@ -96,6 +97,8 @@ public class MainGUI {
                     ex.printStackTrace();
                 }
                 SwingUtilities.updateComponentTreeUI(frame);
+                config.applicationSkin = "Metal";
+                config.saveSkin();
             }
         });
         skin5.addActionListener(new ActionListener() {
@@ -107,6 +110,8 @@ public class MainGUI {
                     ex.printStackTrace();
                 }
                 SwingUtilities.updateComponentTreeUI(frame);
+                config.applicationSkin = "Acryl";
+                config.saveSkin();
             }
         });
         skin6.addActionListener(new ActionListener() {
@@ -118,6 +123,8 @@ public class MainGUI {
                     ex.printStackTrace();
                 }
                 SwingUtilities.updateComponentTreeUI(frame);
+                config.applicationSkin = "Aero";
+                config.saveSkin();
             }
         });
         skin7.addActionListener(new ActionListener() {
@@ -129,6 +136,8 @@ public class MainGUI {
                     ex.printStackTrace();
                 }
                 SwingUtilities.updateComponentTreeUI(frame);
+                config.applicationSkin = "Aluminium";
+                config.saveSkin();
             }
         });
         skin8.addActionListener(new ActionListener() {
@@ -140,6 +149,8 @@ public class MainGUI {
                     ex.printStackTrace();
                 }
                 SwingUtilities.updateComponentTreeUI(frame);
+                config.applicationSkin = "Bernstein";
+                config.saveSkin();
             }
         });
         skin9.addActionListener(new ActionListener() {
@@ -151,6 +162,8 @@ public class MainGUI {
                     ex.printStackTrace();
                 }
                 SwingUtilities.updateComponentTreeUI(frame);
+                config.applicationSkin = "Fast";
+                config.saveSkin();
             }
         });
         skin10.addActionListener(new ActionListener() {
@@ -162,6 +175,8 @@ public class MainGUI {
                     ex.printStackTrace();
                 }
                 SwingUtilities.updateComponentTreeUI(frame);
+                config.applicationSkin = "Graphite";
+                config.saveSkin();
             }
         });
         skin11.addActionListener(new ActionListener() {
@@ -173,6 +188,8 @@ public class MainGUI {
                     ex.printStackTrace();
                 }
                 SwingUtilities.updateComponentTreeUI(frame);
+                config.applicationSkin = "HiFi";
+                config.saveSkin();
             }
         });
         skin12.addActionListener(new ActionListener() {
@@ -184,6 +201,8 @@ public class MainGUI {
                     ex.printStackTrace();
                 }
                 SwingUtilities.updateComponentTreeUI(frame);
+                config.applicationSkin = "Luna";
+                config.saveSkin();
             }
         });
         skin13.addActionListener(new ActionListener() {
@@ -195,6 +214,8 @@ public class MainGUI {
                     ex.printStackTrace();
                 }
                 SwingUtilities.updateComponentTreeUI(frame);
+                config.applicationSkin = "McWin";
+                config.saveSkin();
             }
         });
         skin14.addActionListener(new ActionListener() {
@@ -206,6 +227,8 @@ public class MainGUI {
                     ex.printStackTrace();
                 }
                 SwingUtilities.updateComponentTreeUI(frame);
+                config.applicationSkin = "Mint";
+                config.saveSkin();
             }
         });
         skin15.addActionListener(new ActionListener() {
@@ -217,6 +240,8 @@ public class MainGUI {
                     ex.printStackTrace();
                 }
                 SwingUtilities.updateComponentTreeUI(frame);
+                config.applicationSkin = "Noire";
+                config.saveSkin();
             }
         });
         skin16.addActionListener(new ActionListener() {
@@ -228,6 +253,8 @@ public class MainGUI {
                     ex.printStackTrace();
                 }
                 SwingUtilities.updateComponentTreeUI(frame);
+                config.applicationSkin = "Smart";
+                config.saveSkin();
             }
         });
         skin17.addActionListener(new ActionListener() {
@@ -239,10 +266,11 @@ public class MainGUI {
                     ex.printStackTrace();
                 }
                 SwingUtilities.updateComponentTreeUI(frame);
+                config.applicationSkin = "Texture";
+                config.saveSkin();
             }
         });
         logArea.setEditable(false);
-        JScrollPane sp = new JScrollPane(logArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         BenCMDS benCMDS = new BenCMDS(this);
         JPanel panel = new JPanel();
         JButton startStopBtn = new JButton("Start");
@@ -261,7 +289,6 @@ public class MainGUI {
         frame.add(logBtn);
         frame.add(serversLbl);
         frame.add(logArea);
-        frame.getContentPane().add(sp);
         frame.setSize(700,420);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
@@ -292,8 +319,11 @@ public class MainGUI {
         });
     }
 
+    public void serverCount(int servers) {
+        serversLbl.setText("Servers: " + servers);
+    }
+
     public void appendLog(String text) {
-        // NEED TO DO
-        // logArea.append(text);
+        logArea.append(text);
     }
 }

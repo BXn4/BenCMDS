@@ -1,16 +1,23 @@
 package bxn4.bencmds;
 
 import bxn4.bencmds.GUI.MainGUI;
+import bxn4.bencmds.commands.Commands;
+import bxn4.bencmds.commands.EventListener;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.exceptions.InvalidTokenException;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.sharding.ShardManager;
 
 import java.awt.*;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
-public class BenCMDS {
-    private MainGUI mainGUI = new MainGUI();
+public class BenCMDS extends ListenerAdapter {
+    public MainGUI mainGUI = new MainGUI();
     private ShardManager shardManager;
     static String token;
     static String status;
@@ -19,6 +26,7 @@ public class BenCMDS {
     static String streamUrl;
     static String skin;
     public BenCMDS(MainGUI mainGUI) {
+        this.mainGUI = mainGUI;
         shardManager = null;
     }
 
@@ -27,6 +35,7 @@ public class BenCMDS {
         BenCMDS benCMDS = new BenCMDS(mainGUI);
         Config config = Config.getInstance();
         config.loadConfig();
+        skin = config.applicationSkin;
         if(skin == null) {
             skin = "Graphite";
         }
@@ -43,6 +52,10 @@ public class BenCMDS {
     private void set() {
         Config config = Config.getInstance();
         token = config.botToken;
+        activity = config.botActivity;
+        status = config.botStatus;
+        type = config.botActivityType;
+        streamUrl = config.botStreamUrl;
         if(activity == null) {
             activity = "Be cool!";
             System.out.println("[WARNING] The botActivity in config.yaml is empty. Using the default value.");
@@ -64,8 +77,9 @@ public class BenCMDS {
     public void startBot() {
         set();
         System.out.println("[INFO] Starting");
-        // NEED TO DO
-        // mainGUI.appendLog("Starting");
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        mainGUI.appendLog("\n[" + dtf.format((now)) + "]" + " Starting");
         if(token != null) {
             if (token.length() != 0) {
                 DefaultShardManagerBuilder bot = DefaultShardManagerBuilder.createDefault(token);
@@ -90,19 +104,42 @@ public class BenCMDS {
                 catch (InvalidTokenException e) {
                     Toolkit.getDefaultToolkit().beep();
                     System.out.println("[ERROR] INVALID TOKEN!");
-
-                    // NEED TO DO
-                    // mainGUI.appendLog("Invalid token!");
+                    dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
+                    now = LocalDateTime.now();
+                    mainGUI.appendLog("\n[" + dtf.format((now)) + "]" + " INVALID TOKEN!");
                 }
+                shardManager.addEventListener(this, new EventListener(), new Commands());
             }
-
         }
         else {
             System.out.println("[ERROR] Cannot start bot, because the TOKEN IS EMPTY!");
         }
     }
 
-    public void stopBot() {
+    @Override
+    public void onReady(ReadyEvent event) {
+        Database database = new Database();
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        mainGUI.appendLog("\n[" + dtf.format((now)) + "]" + " Connecting to database...");
+        database.connectToDatbase();
+        Boolean connection = database.ConnectionIsSuccessful;
+        if(connection) {
+            mainGUI.appendLog("\n[" + dtf.format((now)) + "]" + " Connected to database!");
+            int servers = event.getGuildTotalCount();
+            mainGUI.appendLog("\n[" + dtf.format((now)) + "]" + " Listening on: " + servers + " servers");
+            mainGUI.serverCount(servers);
+        }
+        else {
+            mainGUI.appendLog("\n[" + dtf.format((now)) + "]" + " Cannot connect to database");
+            stopBot();
+        }
+    }
 
+    public void stopBot() {
+        shardManager.shutdown();
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        mainGUI.appendLog("\n[" + dtf.format((now)) + "]" + " Stopped");
     }
 }

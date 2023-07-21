@@ -31,12 +31,20 @@ public class BotSettingsGUI {
     String botStreamUrl;
     JButton finishBtn;
     Boolean connectionIsSuccessFul = false;
-    String sqlCommand =
+    String[] sqlCommand = {
             "CREATE TABLE IF NOT EXISTS `userData` (\n" +
-                    "`userId` INTEGER,\n" +
-                    "`userMoney` INTEGER,\n" +
+                    "`userId` BIGINT,\n" +
+                    "`userMoney` BIGINT,\n" +
                     "`userBankClosed` INTEGER\n" +
-                    ");";
+                    ");",
+            "CREATE TABLE IF NOT EXISTS `reminders` (\n" +
+                    "`reminderId` BIGINT,\n" +
+                    "`reminderUserId` BIGINT,\n" +
+                    "`reminderCreatorUserId` BIGINT,\n" +
+                    "`reminderTime` BIGINT,\n" +
+                    "`reminderAbout` TEXT\n" +
+                    ");"
+    };
     JTextField prefixTxtFld;
 
     public void makeGUI() {
@@ -94,7 +102,7 @@ public class BotSettingsGUI {
         JTextField usernameTxtFld = new JTextField("");
         JTextField passwordTxtFld = new JTextField("");
 
-        if(!botActivityType.equals("streaming")) {
+        if (!botActivityType.equals("streaming")) {
             streamUrlTxtFld.setVisible(false);
         }
         if (botStreamUrl == null) {
@@ -688,7 +696,9 @@ public class BotSettingsGUI {
                         Connection conn = DriverManager.getConnection("jdbc:sqlite:" + tempDatabaseUrl);
                         if (conn != null) {
                             Statement stmt = conn.createStatement();
-                            stmt.execute(sqlCommand);
+                            for (int i = 0; i < sqlCommand.length; i++) {
+                                stmt.execute(sqlCommand[i]);
+                            }
                             stmt.close();
                             conn.close();
                         }
@@ -706,7 +716,7 @@ public class BotSettingsGUI {
                                 Files.copy(Path.of(tempDatabaseUrl), path);
                                 JOptionPane.showMessageDialog(null, "Database created.", "Create Database", JOptionPane.INFORMATION_MESSAGE);
                                 serverUrlTxtFld.setText(path.toString());
-                                databaseServer = serverUrlTxtFld.toString();
+                                databaseServer = serverUrlTxtFld.getText();
                                 System.out.println("Database server url is set to: " + databaseServer);
                             } else {
                                 int dialogResult = JOptionPane.showConfirmDialog(null, "The file exists. Do you want to overwrite it?", "Create Database", JOptionPane.YES_NO_OPTION);
@@ -735,7 +745,9 @@ public class BotSettingsGUI {
                             Statement stmt = conn.createStatement();
                             stmt.execute(createDatabaseStr);
                             stmt.execute("USE " + databaseName);
-                            stmt.execute(sqlCommand);
+                            for (int i = 0; i < sqlCommand.length; i++) {
+                                stmt.execute(sqlCommand[i]);
+                            }
                             stmt.close();
                             conn.close();
                             JOptionPane.showMessageDialog(null, "Database created (" + databaseName + ").", "Create Database", JOptionPane.INFORMATION_MESSAGE);

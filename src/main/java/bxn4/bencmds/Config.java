@@ -112,7 +112,6 @@ public class Config {
     }
 
     public void saveConfig() {
-        Map<String, Object> data = null;
         Map<String, Object> map = new LinkedHashMap<>();
         DumperOptions dumper = new DumperOptions();
         map.put("botToken", botToken);
@@ -127,12 +126,45 @@ public class Config {
         map.put("databaseName", databaseName);
         map.put("databaseUsername", databaseUsername);
         map.put("databasePassword", databasePassword);
+        map.put("applicationSkin", applicationSkin);
         dumper.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Yaml yaml = new Yaml(dumper);
         try {
             InputStream inputStream = BenCMDS.class.getResourceAsStream("/config.yaml");
             FileWriter writer = new FileWriter("config.yaml");
             yaml.dump(map, writer);
+            try {
+                writer.close();
+            } catch (IOException ex) {
+            }
+        } catch (IOException ex) {
+        }
+        System.gc();
+    }
+
+    public void saveSkin() {
+        Yaml yaml = new Yaml();
+        DumperOptions dumper = new DumperOptions();
+        FileReader reader = null;
+        Map<String, Object> data = null;
+        try {
+            reader = new FileReader("config.yaml");
+            data = yaml.load(reader);
+            try {
+                reader.close();
+            } catch (IOException e) {
+            }
+        } catch (FileNotFoundException e) {
+        }
+        String appsSkin = "applicationSkin";
+        Object skin = applicationSkin;
+        data.put(appsSkin, skin);
+        dumper.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        yaml = new Yaml(dumper);
+        try {
+            InputStream inputStream = BenCMDS.class.getResourceAsStream("/config.yaml");
+            FileWriter writer = new FileWriter("config.yaml");
+            yaml.dump(data, writer);
             try {
                 writer.close();
             } catch (IOException ex) {

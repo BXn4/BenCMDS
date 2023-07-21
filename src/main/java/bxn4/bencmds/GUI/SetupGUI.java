@@ -1,6 +1,8 @@
 package bxn4.bencmds.GUI;
 
+import bxn4.bencmds.BenCMDS;
 import bxn4.bencmds.Config;
+import com.sun.tools.javac.Main;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
