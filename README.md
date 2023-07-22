@@ -1,5 +1,6 @@
 # BenCMDS
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/94fc23a9faeb4b5390df83a1ae5d6763)](https://app.codacy.com/gh/BXn4/BenCMDS/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+<br>
 Customize the BenCMDS Discord bot, with custom commands!
 <br>
 User friendly, and highly customizable!
