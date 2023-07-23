@@ -2,12 +2,13 @@ package bxn4.bencmds.commands.reminder;
 
 import bxn4.bencmds.Database;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
-import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -22,7 +23,6 @@ public class Reminder {
         EmbedBuilder eb = new EmbedBuilder();
         Long currentTimestamp = System.currentTimeMillis() / 1000;
         Long timestamp = event.getOption("time").getAsLong();
-        String user = event.getUser().getId();
         String about = event.getOption("about").getAsString().replaceAll("[-'`;&-/*\"\\\\-]*", "");
         if(about.length() > 120) {
             about = about.substring(0,120);
@@ -34,9 +34,6 @@ public class Reminder {
         }
         else {
             Long fiveMinutesLaterTimestamp = currentTimestamp + TimeUnit.MINUTES.toSeconds(5);
-            //System.out.println(currentTimestamp);
-            //System.out.println(timestamp);
-            //System.out.println(fiveMinutesLaterTimestamp);
             if (timestamp < fiveMinutesLaterTimestamp) {
                 eb.setTitle("Please set a reminder what is not in 5 minutes");
                 eb.setColor(Color.RED);
@@ -62,7 +59,7 @@ public class Reminder {
                     eb.addField("Reminder in:", "<t:" + timestamp + ":R>", false);
                     eb.appendDescription(about);
                     eb.setColor(Color.ORANGE);
-                    event.replyEmbeds(eb.build()).setEphemeral(false).addActionRow(Button.secondary("a", "Remind Me Too"), Button.danger("remove", "Cancel")).queue();
+                    event.replyEmbeds(eb.build()).setEphemeral(false).addActionRow(Button.of(ButtonStyle.SECONDARY, "remindmetoo", "Remind Me Too", Emoji.fromUnicode("\uD83D\uDD14")), Button.of(ButtonStyle.DANGER, "deletereminder", "Cancel", Emoji.fromUnicode("\uD83D\uDDD1\uFE0F"))).queue();
                 }
                 else {
                     eb.setTitle("You have a reminder!");

@@ -1,6 +1,5 @@
 package bxn4.bencmds.GUI;
 
-
 import bxn4.bencmds.Config;
 
 import javax.swing.*;
@@ -102,11 +101,12 @@ public class BotSettingsGUI {
         JTextField usernameTxtFld = new JTextField("");
         JTextField passwordTxtFld = new JTextField("");
 
-        if (!botActivityType.equals("streaming")) {
-            streamUrlTxtFld.setVisible(false);
-        }
         if (botStreamUrl == null) {
             streamUrlTxtFld.setVisible(false);
+        } else {
+            if (!botActivityType.equals("streaming")) {
+                streamUrlTxtFld.setVisible(false);
+            }
         }
         finishBtn.setEnabled(true);
         if (databaseType == null) {
@@ -156,6 +156,7 @@ public class BotSettingsGUI {
                 case "MySQL" -> databaseTypeCmbx.setSelectedIndex(1);
                 case "MariaDB" -> databaseTypeCmbx.setSelectedIndex(2);
                 case "PostgreSQL" -> databaseTypeCmbx.setSelectedIndex(3);
+                default -> databaseTypeCmbx.setSelectedIndex(0);
             }
         } else {
             databaseType = "SQLite";
@@ -257,7 +258,8 @@ public class BotSettingsGUI {
         statusCmbBx.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                switch (statusCmbBx.getSelectedIndex()) {
+                Integer statusCmmBxValue = statusCmbBx.getSelectedIndex();
+                switch (statusCmmBxValue) {
                     case 0 -> botStatus = "online";
                     case 1 -> botStatus = "idle";
                     case 2 -> botStatus = "dnd";
@@ -270,7 +272,8 @@ public class BotSettingsGUI {
         typeCmbBx.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                switch (typeCmbBx.getSelectedIndex()) {
+                Integer typeCmBxValue = typeCmbBx.getSelectedIndex();
+                switch (typeCmBxValue) {
                     case 0 -> {
                         botActivityType = "listening";
                         streamUrlTxtFld.setVisible(false);
@@ -299,9 +302,10 @@ public class BotSettingsGUI {
         databaseTypeCmbx.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                Integer databaseTypeCmbxValue = databaseTypeCmbx.getSelectedIndex();
                 connectionIsSuccessFul = false;
                 finishBtn.setEnabled(false);
-                switch (databaseTypeCmbx.getSelectedIndex()) {
+                switch (databaseTypeCmbxValue) {
                     case 0 -> {
                         browseBtn.setVisible(true);
                         portTxtFld.setEnabled(false);

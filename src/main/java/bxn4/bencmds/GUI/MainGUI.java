@@ -299,14 +299,16 @@ public class MainGUI {
         startStopBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                switch (startStopBtn.getText()) {
-                    case "Start":
+                String startStopBtnValue = startStopBtn.getText();
+                switch (startStopBtnValue) {
+                    case "Start" -> {
                         benCMDS.startBot();
                         startStopBtn.setText("Stop");
-                        break;
-                    case "Stop":
+                    }
+                    case "Stop" -> {
                         benCMDS.stopBot();
                         startStopBtn.setText("Start");
+                    }
                 }
             }
         });

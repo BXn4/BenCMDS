@@ -12,7 +12,6 @@ import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.sharding.ShardManager;
 
 import java.awt.*;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -46,6 +45,7 @@ public class BenCMDS extends ListenerAdapter {
             Class.forName("org.mariadb.jdbc.Driver");
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
     }
 

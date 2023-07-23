@@ -31,22 +31,23 @@ public class Weather {
     private static Map<Integer, String> wmo = new HashMap<Integer, String>();
 
     public static void weatherAutoComplete(CommandAutoCompleteInteractionEvent event) {
-        switch (event.getFocusedOption().getName()) {
-            case "temperature_unit":
+        String focusedName = event.getFocusedOption().getName();
+        switch (focusedName) {
+            case "temperature_unit" -> {
                 List<Command.Choice> optionsTemp = Stream.of(tempUnits).filter(word -> word.startsWith(event.getFocusedOption().getValue()))
                         .map(word -> new Command.Choice(word, word)).collect(Collectors.toList());
                 event.replyChoices(optionsTemp).queue();
-                break;
-            case "speed_unit":
+            }
+            case "speed_unit" -> {
                 List<Command.Choice> optionsSpeed = Stream.of(speedUnits).filter(word -> word.startsWith(event.getFocusedOption().getValue()))
                         .map(word -> new Command.Choice(word, word)).collect(Collectors.toList());
                 event.replyChoices(optionsSpeed).queue();
-                break;
-            case "precipitation_unit":
+            }
+            case "precipitation_unit" -> {
                 List<Command.Choice> optionsPrecipitation = Stream.of(precipitationUnits).filter(word -> word.startsWith(event.getFocusedOption().getValue()))
                         .map(word -> new Command.Choice(word, word)).collect(Collectors.toList());
                 event.replyChoices(optionsPrecipitation).queue();
-                break;
+            }
         }
     }
 
@@ -122,20 +123,15 @@ public class Weather {
         }
     }
     private static void getWeather(String tempUnit, String speedUnit, String precipitationUnit, String name, Double latitude, Double longitude, String countryCode, SlashCommandInteractionEvent event) {
-        if(wmo.isEmpty() == true) {
+        if(wmo.isEmpty()) {
             setWMO();
         }
         EmbedBuilder eb = new EmbedBuilder();
         switch (speedUnit) {
-            case "km/h":
-                speedUnit = "kmh";
-                break;
-            case "m/s":
-                speedUnit = "ms";
-                break;
-            case "knots":
-                speedUnit = "kn";
-                break;
+            case "km/h" -> speedUnit = "kmh";
+            case "m/s" -> speedUnit = "ms";
+            case "knots" -> speedUnit = "kn";
+            default -> speedUnit = "kmh";
         }
         try {
             URL weatherUrl = new URL("https://api.open-meteo.com/v1/forecast?latitude=" + latitude +

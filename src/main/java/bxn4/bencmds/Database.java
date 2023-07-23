@@ -79,7 +79,6 @@ public class Database {
 
     public void runSQLCommand(String table, String command, Double userId) {
         Integer id;
-        Boolean have = false;
         Config config = Config.getInstance();
         databaseType = config.databaseType;
         databaseServer = config.databaseServer;
