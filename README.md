@@ -4,7 +4,7 @@
 Customize the BenCMDS Discord bot, with custom commands!
 <br>
 User friendly, and highly customizable!
-<br>
+
 - SDK: 17.0.7 -> To build
 - JRE: 17.0.7 -> To run
 
@@ -13,17 +13,15 @@ User friendly, and highly customizable!
 - MySQL
 - MariaDB
 - PostgreSQL
-<br>
-<h1 align="center">
+
+<p align="center">
 <img src="https://github.com/BXn4/BenCMDS/assets/78733248/65ebb351-fd6e-44ca-9698-7695e9f23a67"/>
-<br> 
 <img src="https://github.com/BXn4/BenCMDS/assets/78733248/e1a61a0f-764e-4900-99f3-7aff014d38d0"/> 
-</h1>
+</p>
 
 ## Dependencies:
 <details>
 <summary></summary>
-
 - [JDA](https://github.com/discord-jda/JDA)
 - [SnakeYAMLl](https://mvnrepository.com/artifact/org.yaml/snakeyaml)
 - [SQlite JDBC](https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc)
@@ -36,15 +34,12 @@ User friendly, and highly customizable!
 - [Jackson Databind](https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind)
 - [Jwiki](https://github.com/viralvaghela/Jwiki)
 - [JTattoo](http://www.jtattoo.net)
-
 </details>
 
 ## APIs:
 <details>
 <summary></summary>
-
 - [Wikipedia API](https://en.wikipedia.org/w/api.php)
 - [Geocoding API](https://open-meteo.com/en/docs/geocoding-api)
 - [Weather Forecast API](https://open-meteo.com/en/docs)
-
-</details>
+</details
