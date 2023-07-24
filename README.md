@@ -22,6 +22,7 @@ User friendly, and highly customizable!
 ## Dependencies:
 <details>
 <summary></summary>
+  
 - [JDA](https://github.com/discord-jda/JDA)
 - [SnakeYAMLl](https://mvnrepository.com/artifact/org.yaml/snakeyaml)
 - [SQlite JDBC](https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc)
@@ -39,6 +40,7 @@ User friendly, and highly customizable!
 ## APIs:
 <details>
 <summary></summary>
+  
 - [Wikipedia API](https://en.wikipedia.org/w/api.php)
 - [Geocoding API](https://open-meteo.com/en/docs/geocoding-api)
 - [Weather Forecast API](https://open-meteo.com/en/docs)
